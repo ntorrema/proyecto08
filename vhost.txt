@@ -1,0 +1,28 @@
+
+
+
+En la ruta /etc/httpd/conf.d/
+Añadir fichero *.conf 
+local-homes.conf
+
+<VirtualHost local.homes>
+        DocumentRoot /var/www/homes_local/public/
+        ServerName local.homes
+        SetEnv APPLICATION_ENV "local"
+        DirectoryIndex index.php
+        
+        ErrorLog /etc/httpd/logs/local.homes.log
+        CustomLog /etc/httpd/logs/local.homes.log common
+        
+        <Directory "/var/www/homes_local/public">
+            Options Indexes FollowSymLinks
+            AllowOverride All
+            Order allow,deny
+            Allow from all
+            Require all granted
+        </Directory>
+</VirtualHost>
+
+
+Añadir en fichero c:/windows/drivers/etc/host: XXX.XXX.XX.XX local.homes
+192.168.33.10 local.homes
