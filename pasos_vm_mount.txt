@@ -1,0 +1,138 @@
+# arrancar vagrant: 
+
+#estar siempre en /root/ y estar como root 
+
+vi /etc/locale.conf
+LANG="en_US.UTF-8"
+
+vi /etc/vconsole.conf
+KEYMAP="us"
+
+visudo
+# descomentar %wheel   ALL=(ALL) ALL
+#salir
+
+usermod -aG wheel vagrant
+
+# apagar vagrant: 
+# arrancar vagrant: 
+# descomentar en vagrant la configu
+#apache
+	yum install httpdy	
+	systemctl start httpd.service
+	systemctl enable httpd.service
+	
+	#si no esta instalado openssl
+    yum install mod_ssl openssl
+	#Generamos los certificados
+	# Generate private key 
+	openssl genrsa -out ca.key 2048 
+	# Generate CSR 
+	openssl req -new -key ca.key -out ca.csr
+	# Generate Self Signed Key
+	openssl x509 -req -days 365 -in ca.csr -signkey ca.key -out ca.crt
+ 
+	cp ca.csr /etc/pki/tls/private/ca.csr
+	cp ca.key /etc/pki/tls/private/ca.key
+	cp ca.crt /etc/pki/tls/certs/
+
+	#cambiamos el archivo ssl.conf
+	vi /etc/httpd/conf.d/ssl.conf 
+	#primera linea añadir:
+	LoadModule ssl_module modules/mod_ssl.so
+	# Server Certificate: linea 101, cambiar por
+	SSLCertificateFile /etc/pki/tls/certs/ca.crt
+	# Server Private Key: linea 108, cambiar por
+	SSLCertificateKeyFile /etc/pki/tls/private/ca.key
+
+    service httpd restart
+
+
+#php -> Manual de comandos: https://www.vultr.com/docs/how-to-install-php-7-x-on-centos-7
+    		#https://www.colinodell.com/blog/2016-12/installing-php-7-1
+		#https://centos.pkgs.org/7/remi-x86_64/php71-php-oci8-7.1.6-1.el7.remi.x86_64.rpm.html
+    # download en la carpeta public:  
+	http://rpms.famillecollet.com/enterprise/7/remi/x86_64//php71-php-oci8-7.1.6-1.el7.remi.x86_64.rpm
+	https://rpms.remirepo.net/enterprise/remi-release-7.rpm	
+
+	cp "/vagrant/public/php71-php-oci8-7.1.6-1.el7.remi.x86_64.rpm" /root/
+	cp "/vagrant/public/remi-release-7.rpm" /root/
+	rpm -Uvh remi-release*rpm
+	
+    vi /etc/yum.repos.d/remi-php71.repo 
+	#enabled=1 donde pone [remi-php71] y [remi-php71-debuginfo]
+	sudo yum install php php-gd php-mysql php-mcrypt php-mbstring php-ldap php-oci8 php-pecl-xdebug.x86_64 php-pear php-devel php71-php-pecl-xdebug.x86_64 php-pecl-xdebug.x86_64 
+	#restart apache  
+	service httpd restart
+
+	
+#mysql
+
+	wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+	rpm -ivh mysql-community-release-el7-5.noarch.rpm
+	yum install mysql-server
+	systemctl start mysqld
+	mysql_secure_installation	
+		#insertar la contraseña, la primera es vacia, pinchar enter
+		# insertar la contraseña 2 veces	
+		#el resto es todo enter
+		
+	#si se quiere cambiar contraseña
+	    #   mysql -u root -p
+	    #   use mysql;
+		#	update user set password=PASSWORD("root") where User='root';
+		# 	flush privileges;
+		#	quit;
+	    #   sudo service mysqld restart	
+
+
+#xdebug	
+	vi /etc/php.d/15-xdebug.in
+
+	xdebug.remote_connect_back=1
+	xdebug.remote_autostart=1
+	xdebug.remote_enable=1
+	xdebug.remote_port=9000
+	xdebug.remote_handler=dbgp
+	xdebug.remote_host=192.168.44.1
+	xdebug.remote_log="/tmp/xdebug.log"
+	xdebug.idekey=PHPSTORM
+
+#oracle y oci8
+
+	#descargar oracle instant version 12.1.0.2.0-1 client (instant & devel) en la carpeta public
+cp "/vagrant/public/oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm" /root/
+cp "/vagrant/public/oracle-instantclient12.1-devel-12.1.0.2.0-1.x86_64.rpm" /root/
+	#http://www.oracle.com/technetwork/articles/dsl/technote-php-instant-12c-2088811.html
+	#instalar con :
+    	rpm -ivh oracle-instantclient12.1-basic-12.1.0.2.0-1.x86_64.rpm
+	rpm -ivh oracle-instantclient12.1-devel-12.1.0.2.0-1.x86_64.rpm
+	
+
+       	sudo yum groupinstall "Development Tools" 
+	export PHP_DTRACE=yes
+	yum install systemtap-sdt-devel
+	
+	pecl install oci8
+	#poner esto cuando pregunta de la ruta
+	 ./configure --with-oci8=shared,instantclient,/usr/lib/oracle/12.1/client64/lib/
+
+	###### Si falla seguir los siguientes pasos:########
+	pear download pecl/oci8
+	tar xvzf oci8-2.1.4.tgz
+	cd oci8-2.1.4/
+	phpize
+
+	####################################################	
+
+	
+	#restart apache 
+	service httpd restart
+	
+#util
+yum install unzip	
+yum install git	
+
+
+cd ..
+
