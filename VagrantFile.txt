@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.box = "tnanba/centos-7.3"
+  
+  config.vm.box_check_update = false
+
+  config.vm.hostname = "centos-7.3"
+   #config.vm.network :public_network, ip: "192.168.56.20"
+  config.vm.network :private_network, ip: "192.168.33.20"
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 3306, host: 3307  
+  
+  #AGENDA_UNICA
+  config.vm.synced_folder "C:/redhat_7_N/public/agenda", "/var/www/agenda", owner: "vagrant", group: "vagrant", :mount_options => ["dmode=777", "fmode=777"]
+  
+  #CALIDAD
+  config.vm.synced_folder "C:/redhat_7_N/public/calidad", "/var/www/calidad", owner: "vagrant", group: "vagrant", :mount_options => ["dmode=777", "fmode=777"]
+  
+  #HOMES
+  config.vm.synced_folder "C:/redhat_7_N/public/test-homes", "/var/www/homes_local", owner: "vagrant", group: "vagrant", :mount_options => ["dmode=777", "fmode=777"]
+  
+  #LOCAL PROYECTO08
+  config.vm.synced_folder "C:/redhat_7_N/public/proyecto08", "/var/www/proyecto08", owner: "vagrant", group: "vagrant", :mount_options => ["dmode=777", "fmode=777"]
+  
+  #TEST_TRIBU_DIGITAL
+  #config.vm.synced_folder "C:/CVS/sed2oes/canales", "/var/www/homes", owner: "vagrant", group: "vagrant", :mount_options => ["dmode=777", "fmode=777"]
+  
+    config.vm.provider :virtualbox do |vb|
+		#vb.name = config.vm.hostname
+		#v.gui = true
+		#vb.customize ["modifyvm", :id, "--name", config.vm.hostname]
+        vb.customize ["modifyvm", :id, "--memory", 4096]
+        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        vb.customize ["modifyvm", :id, "--cpus", 2]
+	end
+end
